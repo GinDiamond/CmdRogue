@@ -1,0 +1,45 @@
+                     === CmdRogue ===
+
+by GinDiamond/TheWinnieston
+aka Patrick Jackson
+
+- 0.0.0.3b
+Second release! This one vastly improves upon the previous base code:
+New:
+	#
+Fixed:
+	#Monster combat bug- again a for /l statement bug
+	#Title screen typos
+	#Message log errors
+Added:
+	#
+
+- 0.0.0.2a
+First public release!
+New:
+	#Flashy new title screen!
+	#Difficulty options!
+	#More logical combat mechanics
+	#Debug mode option
+Fixed:
+	#Monster stacking bug- caused by pervasive for /l loop bug
+	#Message displays are more accurate
+	#Cleaned up root folder
+	#New code in parts
+Added:
+	#Alot more bugs
+
+- 0.0.0.1
+Initial test release
+
+
+
+==TODO==
+
+-Rewrite entire base code (before it gets WAY out of hand)
+-Optimize code for speed
+-Include random floor generator (currently being worked on)
+-More than 1 type of monster
+-Items
+-Inventory
+-Integrity
