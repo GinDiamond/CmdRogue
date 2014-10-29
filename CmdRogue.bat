@@ -1,12 +1,12 @@
 ::CmdRogue
-::version 0.0.0.3b alpha
+::version 0.0.1.3b alpha
 ::Created by Patrick Jackson, a.k.a. TheWinnieston/GinDiamond
 ::started on 4/29/2012 at 9:08 AM
 ::Feel free to use any part of this game, as long as my credits are given.
 cls
 @echo off
 set homedir=%cd%
-set version=0.0.0.3b
+set version=0.0.1.3b
 :debugQuery
 echo Debug mode?
 choice /c yn /n /m ">> "
@@ -50,7 +50,7 @@ if %selected% == 3 (
 	set THREEclr=0e
 )
 call :TitleDisplay
-ctext.exe "{04}          Console Roguelike {0c}v.0.0.0.3{09}b"
+ctext.exe "{04}          Console Roguelike {0c}v.0.0.1.3{09}b"
 echo.
 ctext.exe "{04}           by {0c}Patrick Jackson"
 echo.
@@ -210,14 +210,18 @@ set player.hp=50
 set player.armor=0
 set gametime=1.00
 set xp.pccent=0
+
+for /l %%n in (0,1,13) do (
+	set v.line[%%n]=!line[%%n]!
+)
+set die_floorcount=0
 goto generate_charpos
 
 :roll
-cd floors
-call maze1.bat
-::floors
-cd..
-
+echo Generating map...
+set /a die_floorcount+=1
+%homedir%\core\generator\cave_generator.bat 39 13 60 floors\map%die_floorcount%
+call floors\map%die_floorcount%.bat
 for /l %%n in (0,1,13) do (
 	set v.line[%%n]=!line[%%n]!
 )
@@ -225,14 +229,14 @@ for /l %%n in (0,1,13) do (
 :generate_charpos
 set /a pos.x=!random!%%36+1
 set /a pos.y=!random!%%12+1
-
-for /l %%x in (1,1,!posts!) do (
-	if !pos.x! == !post%%x.x! (
-		if !pos.y! == !post%%x.y! (
-			goto generate_charpos
-		)
-	)
+set /a chars=!pos.x!+1
+set line=!line[%pos.y%]!
+set chkline=!line:~0,%chars%!
+set c.line=!chkline:~-1!
+if !c.line! == # (
+	goto generate_charpos
 )
+
 
 ::generates each monster's position
 set loops=0
@@ -244,19 +248,21 @@ if !loops! lss !monsters! goto generate_monsterpos
 )
 
 for /l %%i in (1,1,!monsters!) do (
-	for /l %%x in (1,1,!posts!) do (
-		if !monspos%%x.x! == !post%%x.x! (
-			if !monspos%%x.y! == !post%%x.y! (
-				goto generate_monsterpos
-			)
-		)
-		if !monspos%%x.x! == !pos.x! (
-			if !monspos%%x.y! == !pos.y! (
-				goto generate_monsterpos
-			)
+	set /a chars=!monspos%%i.x!+1
+	set monspos=!monspos%%i.y!
+	set line=!line[%monspos%]!
+	set chkline=!line:~0,%chars%!
+	set c.line=!chkline:~-1!
+	if !c.line! == # (
+		goto generate_monsterpos
+	)
+	if !monspos%%i.x! == !pos.x! (
+		if !monspos%%i.y! == !pos.y! (
+			goto generate_monsterpos
 		)
 	)
 )
+
 
 :game
 call :display
@@ -265,8 +271,6 @@ call :Monsters
 goto game
 
 :display
-::cls
-::pause
 graphic.exe hidecursor
 graphic.exe locate 0 0
 
@@ -289,7 +293,6 @@ set monsstate=!monsstate%loopP%!
 		if %%b equ !monsposy! (
 			set part1=!line:~0,%monspos%!
 			set part2=!line:~%monsxAdd1%!
-			::set line=!line:~0,%monspos%!!monsstate!!line:~%monsxAdd1%!
 			set line=!part1!!monsstate!!part2!
 			set v.line[%%b]=!line!
 		)
@@ -427,21 +430,6 @@ if !c.line! == # (
 	goto Move
 )
 
-
-::for /l %%i in (1,1,!monsters!) do (
-::	set monster=%%i
-::	if !monslive%%i! == true (
-::		if !pos.x! == !monspos%monster%.x! (
-::			if !pos.y! == !monspos%monster%.y! (
-::				echo !monster!
-::				pause
-::				cls
-::				goto player.combat
-::			)
-::		)
-::	)
-::)
-
 set monscombloops=0
 :monscomb
 set /a monscombloops+=1
@@ -454,8 +442,6 @@ if !monslive%monscombloops%! == true (
 	)
 )
 if !monscombloops! lss !monsters! goto monscomb
-
-::goto :eof
 goto :eof
 
 
@@ -512,15 +498,6 @@ for /l %%a in (%c.sq%, -1, 1) do (
 :out
 call set /a count=%%count%%+1
 if %count% GTR 0 goto next
-set /a c.sq=(%c.sq%-%sqr%)*100
-set /a div=%root%*2
-for /l %%b in (9,-1,0) do (
-	set /a sqr=%div%%%b*%%b
-	if !sqr! leq %c.sq% (
-		set root=%root%%%b
-		goto out
-	)
-)
 
 :next
 if %c.sq% neq 0 set digit=%digit%
@@ -548,16 +525,6 @@ if !c! leq 6 (
 	)
 )
 goto m.randmove
-
-:::fiffif
-::set /a fiffifmove=!random!%%2
-::if !fiffifmove! == 0 (
-::	if !monspos.x! gtr !pos.x! set /a monspos.x-=1
-::	if !monspos.x! lss !pos.x! set /a monspos.x+=1
-::	if !monspos.y! gtr !pos.y! set /a monspos.y-=1
-::	if !monspos.y! lss !pos.y! set /a monspos.y+=1
-::	goto setmonstcoords
-::)
 
 :m.randmove
 set /a m.movedie=!random!%%9
@@ -603,15 +570,11 @@ if !m.movedie! == 8 (
 
 
 :setmonstcoords
-if !monspos.x! == 0 set monspos.x=1
-if !monspos.x! == 38 set monspos.x=37
-if !monspos.y! == 0 set monspos.y=1
-if !monspos.y! == 13 set monspos.y=12
-
-set p1=!monspos.x!d
-set p2=!monspos.y!
-
-if !tile_%p1%%p2%! == 0 (
+set /a chars=!monspos.x!+1
+set line=!line[%monspos.y%]!
+set chkline=!line:~0,%chars%!
+set c.line=!chkline:~-1!
+if !c.line! == # (
 	set monspos.x=!m.prev.x!
 	set monspos.y=!m.prev.y!
 )
@@ -731,12 +694,12 @@ if %d_mode% == y (
 ctext.exe {0c}
 echo.
 echo.
-echo.    ‹€€€          €   €€€€‹
-echo.    €             €   €   €
-echo.    €    ‹€‹€‹ ‹€€€   €€€€ﬂ ‹€€‹ ‹€€‹      ‹€‹
-echo.    €    € € € €  €   €  €  €  € €  € €  € € €
-echo.    €    €   € ﬂ€€ﬂ   €   € ﬂ€€ﬂ ﬂ€€€ €  € €€ﬂ
-echo     €    €                          € ﬂ€€ﬂ €
-echo.    ﬂ€€€                         ﬂ€€ﬂ      ﬂ€€
+echo.    –º–ª–ª–ª          –ª   –ª–ª–ª–ª–º
+echo.    –ª             –ª   –ª   –ª
+echo.    –ª    –º–ª–º–ª–º –º–ª–ª–ª   –ª–ª–ª–ª–ø –º–ª–ª–º –º–ª–ª–º      –º–ª–º
+echo.    –ª    –ª –ª –ª –ª  –ª   –ª  –ª  –ª  –ª –ª  –ª –ª  –ª –ª –ª
+echo.    –ª    –ª   –ª –ø–ª–ª–ø   –ª   –ª –ø–ª–ª–ø –ø–ª–ª–ª –ª  –ª –ª–ª–ø
+echo     –ª    –ª                          –ª –ø–ª–ª–ø –ª
+echo.    –ø–ª–ª–ª                         –ø–ª–ª–ø      –ø–ª–ª
 echo.
 echo.
