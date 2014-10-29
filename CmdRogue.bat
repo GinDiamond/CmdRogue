@@ -220,11 +220,12 @@ goto generate_charpos
 :roll
 echo Generating map...
 set /a die_floorcount+=1
-%homedir%\core\generator\cave_generator.bat 39 13 60 floors\map%die_floorcount%
+call core\generator\cave_generator.bat 39 13 200 floors\map%die_floorcount%
 call floors\map%die_floorcount%.bat
 for /l %%n in (0,1,13) do (
 	set v.line[%%n]=!line[%%n]!
 )
+cls
 
 :generate_charpos
 set /a pos.x=!random!%%36+1
