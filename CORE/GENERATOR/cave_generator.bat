@@ -82,6 +82,8 @@ echo @echo off > %filename%.bat
 for /l %%i in (0,1,%rows%) do (
 	echo set line[%%i]=!line[%%i]!>> %filename%.bat
 )
+echo goto :eof >> %filename%.bat
+
 goto :eof
 
 
